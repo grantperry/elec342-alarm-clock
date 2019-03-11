@@ -1,8 +1,11 @@
 i2c_init:
-	; cli
+	cli
 
-	cli DDRD, SDA
-	cli DDRD, SCL
+	cbi DDRC, 4
+	cbi DDRC, 5
+
+	sbi PORTC, 4
+	sbi PORTC, 5
 
 	lds r16, PRR
 	andi r16, 0b01101111
@@ -15,7 +18,7 @@ i2c_init:
 	sts TWSR, r16
 
 	; set TWBR(Two Wire Bit Rate) reg to 0 as this sets the clock to 100kHz
-	ldi r16, 0x4A ; 16000000 / (16 + 2 * 73 * 1)
+	ldi r16, 0xc1 ; 16000000 / (16 + 2 * 193 * 1)
 	sts TWBR, r16
 
 	; enable TW and clear the interupt
@@ -27,7 +30,7 @@ i2c_init:
 	; sbrs r16, TWINT ; if TWINT is set continue, else loop back to _wait
 	; rjmp _i2c_init_wait
 
-	; sei
+	sei
 	ret
 
 
@@ -41,14 +44,8 @@ i2c_start:
 
 	_i2c_start_wait:
 	lds r16, TWCR
-	sts 0x20+PORTD, r16
-	lds r16, TWCR
 	sbrs r16, TWINT ; if TWINT is set continue, else loop back to _wait
 	rjmp _i2c_start_wait
-
-	ldi r16, 0xc0
-	sts 0x20+PORTD, r16
-
 
 	lds r16, TWSR
 	andi r16, 0b11111000
@@ -66,13 +63,30 @@ i2c_stop:
 	ldi r16, (1<<TWINT)|(1<<TWSTO)|(1<<TWEN)
 	sts TWCR, r16
 
-	; check to make sure no more data is transmitting on the bus
-	_check:
-	lds r16, TWCR
-	andi r16, 0b00010000
-	brne _check
+	rcall delay1msec
 	ret
 
 
+i2c_write_SLA:
+	rcall i2c_write_byte
 
-i2c_write:
+	lds		r16,TWSR
+	andi	r16,0xf8		; mask out 
+	cpi		r16,0x18		; TWSR = SLA+W sent, ACK received (0x18)
+	ret
+
+
+i2c_write_byte:
+	sts TWDR, r16
+	ldi r16, (1<<TWINT) | (1<<TWEN)
+	sts TWCR, r16
+
+	rcall i2c_tansmit_wait
+	ret
+
+
+i2c_tansmit_wait:
+	lds r16, TWCR
+	sbrs r16, TWINT
+	rjmp i2c_tansmit_wait
+	ret

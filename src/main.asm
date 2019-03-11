@@ -7,10 +7,21 @@
 
 .include "./m328Pdef.inc"
 
+.def rBin1H = r2
+.def rBin1L = r1
+.def rBin2H = r4
+.def rBin2L = r3
+
 .DSEG
 HOUR:			.BYTE 1
 MINUTE:		.BYTE 1
 SECOND:		.BYTE 1
+
+DAY:		.BYTE 1
+MONTH:		.BYTE 1
+YEAR:		.BYTE 4
+
+BCD_MEM:		.BYTE 5
 
 .CSEG
 .org		0x0000
@@ -44,7 +55,6 @@ start:
 	jmp UNKNOWN_INT ; 2-wire Serial
 	jmp UNKNOWN_INT ; SPM Ready
 
-.equ TWI_CLOCK_DIVISOR = (16000000/100000)
 
 ;
 ; Main code goes here.
@@ -64,22 +74,147 @@ main:
 
 	call initLED
 
-	rcall TWI_enable
-
-	rcall i2c_init
-	rcall i2c_start
-	; rcall i2c_stop
-
-loop:
-	call setLED
-
+	; rcall TWI_enable
 	call delay1sec
 
+	rcall init_twi
 
+	ldi		r24,0x27	; Setup LCD display at this address (Maybe 0x3f instead)
+	rcall	LCD_Setup
+	rcall	LCD_Clear
+
+	ldi		ZL,LOW(LCD_init_Msg*2)
+	ldi		ZH,HIGH(LCD_init_Msg*2)
+	call	LCD_Text
+
+	ldi		r24,0x27	; Setup LCD display at this address (Maybe 0x3f instead)
+	rcall	LCD_Setup
+
+	rcall	LCD_Clear
+	call delay1msec
+
+	; ldi		ZL,LOW(LCD_init_Msg1*2)
+	; ldi		ZH,HIGH(LCD_init_Msg1*2)
+	; call	LCD_Text
+
+	; ldi r19, 4
+	; rcall LCD_Number
+
+	; clr r0
+	
+
+loop:
+	rcall getSeconds
+	cpi r16, 59
+	brge min_term
+	inc r16
+	rcall setSeconds
+	rjmp logic_end
+
+	min_term:
+	clr r16
+	rcall setSeconds
+	
+	rcall getMin
+	cpi r16, 59
+	brge hour_term
+	inc r16
+	rcall setMin
+	rjmp logic_end
+
+	hour_term:
+	clr r16
+	rcall setMin
+	
+	rcall getHour
+	cpi r16, 23
+	brge day_term
+	inc r16
+	rcall setHour
+	rjmp logic_end
+
+	day_term:
+	clr r16
+	rcall setHour
+	
+	rcall getDay
+	cpi r16, 28 ; this will need to figure out month terminator
+	brge month_term
+	inc r16
+	rcall setDay
+	rjmp logic_end
+
+	month_term:
+	ldi r16, 1 ; day resets to 1
+	rcall setDay
+
+	rcall getMonth
+	cpi r16, 12 ; this will need to figure out month terminator
+	brge year_term
+	inc r16
+	rcall setMonth
+	rjmp logic_end
+
+	year_term:
+	ldi r16, 1 ; Month resets to 1
+	rcall setMonth
+
+	rcall getYear
+	ldi r16, 1
+	add r0, r16
+	ldi r16, 0
+	adc r1, r16
+	adc r2, r16
+	adc r3, r16
+	rcall setYear
+	
+
+	logic_end:
+
+	rcall print_time
+
+	call setLED
+	call delay1sec
 	call clearLED
 	call delay1sec
   jmp	loop
 
+print_time:
+	ldi r25, 0x00
+	rcall LCD_Position
+
+	rcall getHour
+	rcall LCD_Number
+	rcall time_delimiter
+	rcall getMin
+	rcall LCD_Number
+	rcall time_delimiter
+	rcall getSeconds
+	rcall LCD_Number
+	
+	ldi r25, 0x40
+	rcall LCD_Position
+
+	rcall getDay
+	rcall LCD_Number
+	rcall date_delimiter
+	rcall getMonth
+	rcall LCD_Number
+	rcall date_delimiter
+	rcall getYear
+	mov r16, r0
+	rcall LCD_Number
+	ret
+
+time_delimiter:
+	ldi r19, ':'
+	rcall LCD_Char
+	ret
+
+date_delimiter:
+	ldi r19, '/'
+	rcall LCD_Char
+	ret
 
 ;
 ; Delay by the number of instructions in r20/r21/r22 as a 24 bit value * 4
@@ -94,7 +229,7 @@ delay1msec:
 	ldi	r22,LOW(ONE_MSECOND)
 	rjmp	_delay
 
-.equ	ONE_SECOND =	(16000000/4)/4
+.equ	ONE_SECOND =	(16000000/4)/128
 delay1sec:
 	ldi	r20,BYTE3(ONE_SECOND)
 	ldi	r21,HIGH(ONE_SECOND)
@@ -108,15 +243,156 @@ _delay:
 	brne	_delay
 	ret
 
+getSeconds:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(SECOND*2)
+	ldi		ZH,HIGH(SECOND*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+getMin:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(MINUTE*2)
+	ldi		ZH,HIGH(MINUTE*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+getHour:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(HOUR*2)
+	ldi		ZH,HIGH(HOUR*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+getYear:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(YEAR*2)
+	ldi		ZH,HIGH(YEAR*2)
+	ld r0, z+
+	ld r1, z+
+	ld r2, z+
+	ld r3, z
+	pop ZH
+	pop ZL
+	ret
+
+getMonth:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(MONTH*2)
+	ldi		ZH,HIGH(MONTH*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+getDay:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(DAY*2)
+	ldi		ZH,HIGH(DAY*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setSeconds:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(SECOND*2)
+	ldi		ZH,HIGH(SECOND*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+setMin:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(MINUTE*2)
+	ldi		ZH,HIGH(MINUTE*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+setHour:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(HOUR*2)
+	ldi		ZH,HIGH(HOUR*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+	ret
+
+setYear:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(YEAR*2)
+	ldi		ZH,HIGH(YEAR*2)
+	st z+, r0
+	st z+, r1
+	st z+, r2
+	st z, r3
+	pop ZH
+	pop ZL
+	ret
+
+setDay:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(DAY*2)
+	ldi		ZH,HIGH(DAY*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+setMonth:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(MONTH*2)
+	ldi		ZH,HIGH(MONTH*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
 
 
 ; Initialize all memory fields
 initialiseMem:
 	; set Hour, Min and Second to 0
-	ldi r16, 0x00
-	sts HOUR, r16
-	sts MINUTE, r16
-	sts SECOND, r16
+	; clr r16
+	ldi r16, 0
+	rcall setSeconds
+	ldi r16, 59
+	rcall setMin
+	ldi r16, 23
+	rcall setHour
+
+	mov r1, r16
+	mov r2, r16
+	mov r3, r16
+	ldi r16, 49 ; years since 1970
+	mov r0, r16
+	rcall setYear
+
+	ldi r16, 12
+	rcall setMonth
+	ldi r16, 28
+	rcall setDay
 	ret
 
 
@@ -132,22 +408,6 @@ clearLED:
 	cbi	PORTB,5	; 0 -> output bit
 	ret
 
-
-;
-; enable TWI through the TWCR register
-; setting the TXEN or TWEN bits automagically set the pins for their 'alternate function'
-; alternate function in this case automatically enables them in the Power Saving register.
-;
-TWI_enable:
-	;set TWCR:TWEN && TWCR:TWIE (MMIO)
-	lds r16, TWCR ; load the current TwoWire Register
-	ori r16, (1<<TWEN) | (1<<TWIE) ; or the new configuration into the register
-	
-	sts TWCR, r16	;	write out the new TWI configuration
-	ret
-
-
-
 UNKNOWN_INT:
 	sbi PORTD, 7
 	jmp end
@@ -160,4 +420,8 @@ end:
 	sts 0x20+PORTD, r16
 	jmp end
 
-.include "src/i2c.asm"
+.include "src/I2C-master.asm"
+.include "src/LCD.asm"
+.include "src/div8u.asm"
+.include "src/bin2ascii5.asm"
+; .include "src/i2c.asm"
