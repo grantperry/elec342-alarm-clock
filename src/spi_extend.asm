@@ -19,6 +19,13 @@ spi_extend_init:
 	pop r16
 	ret
 
+setLEDs:
+	push r17
+	ldi r17, 0x14
+	rcall spi_send
+	pop r17
+	ret
+
 setLED:
 	push r16
 	push r17
@@ -42,6 +49,9 @@ clearLED:
 getButtons:
 	push r17
 	ldi r17, 0x13 ; read the Breg inputs
+	clr r16
 	rcall spi_read
+	ldi r17, 0xFF
+	eor r16, r17 ; XOR to flip all bits
 	pop r17
 	ret

@@ -88,12 +88,9 @@ main:
 	rcall spi_init
 	rcall spi_extend_init
 
+	rcall buttons_init
+	
 	rcall timer_enable
-
-	rcall getButtons
-	tst r16
-	brne sl
-	rcall setLED
 
 	sl:
 	sleep
@@ -146,3 +143,4 @@ end:
 .include "src/bin2ascii5.asm"
 .include "src/spi.asm"
 .include "src/spi_extend.asm"
+.include "src/buttons.asm"

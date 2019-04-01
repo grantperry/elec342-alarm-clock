@@ -38,8 +38,14 @@ TIM1_COMPA:
 	rcall get_timer_sub
 	cpi r16, 100
 	brge sub_sec_100
-	; cpi r16, 50
-	; brge sub_sec_50
+
+	ldi r17, 10 ; divisor
+	; r16 subject of division
+	rcall div8u
+
+	tst r15
+	breq sub_sec_rep_10
+
 	rjmp TIM1_COMPA_end
 
 	;run on the second once a second
@@ -51,6 +57,12 @@ TIM1_COMPA:
 	
 	rcall print_time
 	rcall print_date
+
+	rcall getButtons
+	rcall setLEDs
+	rjmp TIM1_COMPA_end
+
+	sub_sec_rep_10: ; called 10 times a second except when it is the second
 	rjmp TIM1_COMPA_end
 
 	TIM1_COMPA_end:
