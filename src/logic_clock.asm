@@ -33,6 +33,8 @@ logic_clock:
 	rcall setHour
 	
 	rcall logic_clock_day_inc
+	tst r16
+	breq logic_clock_end ; if 0 then end, else continue to incrememnt the month
 
 	rcall getMonth
 	cpi r16, 12 			;terminate if month >= 12
@@ -69,9 +71,15 @@ logic_clock_day_inc:
 	brge month_term
 	inc r16
 	rcall setDay
-	rjmp logic_clock_end
+	rjmp logic_clock_day_inc_end
+	
 
 	month_term:
 	ldi r16, 1 ; day resets to 1
 	rcall setDay
+	ldi r16, 1
+	ret
+
+	logic_clock_day_inc_end:
+	clr r16
 	ret
