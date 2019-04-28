@@ -32,22 +32,7 @@ logic_clock:
 	clr r16
 	rcall setHour
 	
-	; CALCULATE HOW MANY DAYS IN THE CURRENT MONTH FOR THIS YEAR
-	rcall getMonth
-	rcall getMonthLength
-	push r17
-
-	rcall getDay
-	pop r17
-	cp r16, r17 ; this will need to figure out month terminator
-	brge month_term
-	inc r16
-	rcall setDay
-	rjmp logic_clock_end
-
-	month_term:
-	ldi r16, 1 ; day resets to 1
-	rcall setDay
+	rcall logic_clock_day_inc
 
 	rcall getMonth
 	cpi r16, 12 			;terminate if month >= 12
@@ -70,4 +55,23 @@ logic_clock:
 	rcall setYear
 
 	logic_clock_end:
+	ret
+
+logic_clock_day_inc:
+	; CALCULATE HOW MANY DAYS IN THE CURRENT MONTH FOR THIS YEAR
+	rcall getMonth
+	rcall getMonthLength
+	push r17
+
+	rcall getDay
+	pop r17
+	cp r16, r17 ; this will need to figure out month terminator
+	brge month_term
+	inc r16
+	rcall setDay
+	rjmp logic_clock_end
+
+	month_term:
+	ldi r16, 1 ; day resets to 1
+	rcall setDay
 	ret

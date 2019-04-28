@@ -30,6 +30,13 @@ BCD_MEM:		.BYTE 5
 
 SUB_INT_DIV: .BYTE 1
 
+BUTTONS:				.BYTE 1
+BUTTONS_STABLE:	.BYTE 1
+BUTTONS_COUNT:	.BYTE 1
+
+SELECT:	.BYTE 1
+FLASH_SELECT:	.BYTE 1
+
 .CSEG
 .org		0x0000
 
@@ -40,7 +47,7 @@ start:
 	jmp UNKNOWN_INT ; IRQ1
 	jmp UNKNOWN_INT ; PCINT0
 	jmp UNKNOWN_INT ; PCINT1
-	jmp UNKNOWN_INT ; PCINT2
+	jmp PCINT2_BUTTONS ; PCINT2
 	jmp UNKNOWN_INT ; Watchdog Timeout
 	jmp UNKNOWN_INT ; Timer2 CompareA
 	jmp UNKNOWN_INT ; Timer2 CompareB
@@ -89,7 +96,7 @@ main:
 	rcall spi_extend_init
 
 	rcall buttons_init
-	
+
 	rcall timer_enable
 
 	sl:
@@ -119,6 +126,12 @@ initialiseMem:
 
 	clr r16
 	rcall setState
+
+	ldi r16, 0
+	rcall setSelect
+
+	ldi r16, 0xFF
+	rcall setFlashSelect
 
 	; rcall toggleState1224
 	; rcall toggleState1224

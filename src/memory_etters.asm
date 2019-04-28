@@ -140,6 +140,106 @@ getState:
 	pop ZL
 	ret
 
+setButtons:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS*2)
+	ldi		ZH,HIGH(BUTTONS*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getButtons:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS*2)
+	ldi		ZH,HIGH(BUTTONS*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setButtonsStable:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS_STABLE*2)
+	ldi		ZH,HIGH(BUTTONS_STABLE*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getButtonsStable:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS_STABLE*2)
+	ldi		ZH,HIGH(BUTTONS_STABLE*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setButtonsCount:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS_COUNT*2)
+	ldi		ZH,HIGH(BUTTONS_COUNT*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getButtonsCount:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(BUTTONS_COUNT*2)
+	ldi		ZH,HIGH(BUTTONS_COUNT*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setSelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(SELECT*2)
+	ldi		ZH,HIGH(SELECT*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getSelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(SELECT*2)
+	ldi		ZH,HIGH(SELECT*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setFlashSelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(FLASH_SELECT*2)
+	ldi		ZH,HIGH(FLASH_SELECT*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getFlashSelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(FLASH_SELECT*2)
+	ldi		ZH,HIGH(FLASH_SELECT*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
 toggleState1224:
 	push r16
 

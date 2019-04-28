@@ -11,21 +11,27 @@ print_time:
 	rjmp print_time_12
 
 	print_time_24:
-	rcall getHour
-	rcall LCD_Number
+	rcall print_hour
 	rcall time_delimiter
-	rcall getMin
-	rcall LCD_Number
+	rcall print_minute
 	rcall time_delimiter
-	rcall getSeconds
-	rcall LCD_Number
+	rcall print_second
 
 	push r25
 	ldi r25, 0x0E
 	rcall LCD_Position
 	pop r25
+
+	rcall getFlashSelect
+	sbrs r16, 5
+	rjmp print_time_no_24 ; dont print '24' because its flashing
+
 	ldi r16, 24
 	rcall LCD_Number
+
+	print_time_no_24:
+
+	rcall time_blank ; to wipe the '24 from the position'
 
 	rjmp print_time_end
 
@@ -48,12 +54,19 @@ print_time:
 	rcall LCD_Number
 
 	rcall time_delimiter
-	rcall getMin
-	rcall LCD_Number
+	rcall print_minute
 	rcall time_delimiter
-	rcall getSeconds
-	rcall LCD_Number
+	rcall print_second
+
+	rcall getFlashSelect
+	sbrs r16, 5
+	rjmp print_time_12_00_flash ; dont print 'AM' because its flashing
+
 	rcall time_am
+	rjmp print_time_end
+
+	print_time_12_00_flash:
+	rcall time_blank
 	rjmp print_time_end
 
 	print_time_12_pm:
@@ -69,12 +82,18 @@ print_time:
 
 	rcall LCD_Number
 	rcall time_delimiter
-	rcall getMin
-	rcall LCD_Number
+	rcall print_minute
 	rcall time_delimiter
-	rcall getSeconds
-	rcall LCD_Number
+	rcall print_second
+
+	rcall getFlashSelect
+	sbrs r16, 5
+	rjmp print_time_24_00_flash ; dont print 'AM' because its flashing
+
 	rcall time_pm
+
+	print_time_24_00_flash:
+	rcall time_blank
 
 	print_time_end:
 	pop r16
@@ -90,15 +109,11 @@ print_date:
 	rcall LCD_Position
 	pop r25
 
-	rcall getDay
-	rcall LCD_Number
+	rcall print_day
 	rcall date_delimiter
-	rcall getMonth
-	rcall LCD_Number
+	rcall print_month
 	rcall date_delimiter
-	rcall getYear
-	mov r16, r0
-	rcall LCD_Number
+	rcall print_year
 
 	pop r16
 	ret
@@ -107,6 +122,17 @@ time_delimiter:
 	push r19
 
 	ldi r19, ':'
+	rcall LCD_Char
+
+	pop r19
+	ret
+
+time_blank:
+	push r19
+
+	ldi r19, ' '
+	rcall LCD_Char
+	ldi r19, ' '
 	rcall LCD_Char
 
 	pop r19
@@ -151,4 +177,97 @@ date_delimiter:
 	rcall LCD_Char
 
 	pop r19
+	ret
+
+print_second:
+	rcall getSeconds
+	rcall LCD_Number
+	ret
+
+print_minute:
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 1
+	rjmp print_minute_end
+	pop r16
+	rcall getMin
+	rcall LCD_Number
+	ret
+	print_minute_end:
+	pop r16
+	rcall time_blank
+	ret
+
+print_hour:
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 0
+	rjmp print_hour_end
+	pop r16
+	rcall getHour
+	rcall LCD_Number
+	ret
+	print_hour_end:
+	pop r16
+	rcall time_blank
+	ret
+
+print_day:
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 2
+	rjmp print_day_end
+	pop r16
+	rcall getDay
+	rcall LCD_Number
+	ret
+	print_day_end:
+	pop r16
+	rcall time_blank
+	ret
+
+print_month:
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 3
+	rjmp print_month_end
+	pop r16
+	rcall getMonth
+	rcall LCD_Number
+	ret
+	print_month_end:
+	pop r16
+	rcall time_blank
+	ret
+
+print_year:
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 4
+	rjmp print_year_end
+	pop r16
+	rcall getYear
+	mov r16, r0
+	rcall LCD_Number
+	ret
+	print_year_end:
+	pop r16
+	rcall time_blank
+	ret
+
+screen_flash:
+	push r16
+	push r17
+	push r18
+
+	rcall getFlashSelect
+	mov r17, r16
+	rcall getSelect ; r16
+	eor r16, r17
+
+	rcall setFlashSelect
+
+	pop r18
+	pop r17
+	pop r16
 	ret

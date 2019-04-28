@@ -39,12 +39,26 @@ TIM1_COMPA:
 	cpi r16, 100
 	brge sub_sec_100
 
+	ldi r17, 50 ; divisor
+	; r16 subject of division
+	rcall get_timer_sub
+	rcall div8u
+	tst r15
+	breq sub_sec_rep_25
+
 	ldi r17, 10 ; divisor
 	; r16 subject of division
+	rcall get_timer_sub
 	rcall div8u
-
 	tst r15
 	breq sub_sec_rep_10
+
+	ldi r17, 2 ; divisor
+	; r16 subject of division
+	rcall get_timer_sub
+	rcall div8u
+	tst r15
+	breq sub_sec_rep_02
 
 	rjmp TIM1_COMPA_end
 
@@ -58,12 +72,19 @@ TIM1_COMPA:
 	rcall print_time
 	rcall print_date
 
-	rcall getButtons
-	rcall setLEDs
+	rjmp TIM1_COMPA_end
+
+	sub_sec_rep_25: ; called 2 times a second except when it is the second
+	rcall screen_flash
+	rcall print_time
+	rcall print_date
 	rjmp TIM1_COMPA_end
 
 	sub_sec_rep_10: ; called 10 times a second except when it is the second
 	rjmp TIM1_COMPA_end
+
+	sub_sec_rep_02:
+	rcall button_debounce
 
 	TIM1_COMPA_end:
 	pop r16
