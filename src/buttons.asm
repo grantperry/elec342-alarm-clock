@@ -132,10 +132,10 @@ button_select:
 
 button_increment:
 	rcall getSelect
-	cpi r16, (1<<1)
-	breq inc_min
 	cpi r16, (1<<0)
 	breq inc_hour
+	cpi r16, (1<<1)
+	breq inc_min
 	cpi r16, (1<<2)
 	breq inc_day
 	cpi r16, (1<<3)
@@ -195,7 +195,15 @@ button_increment:
 
 	inc_year:
 	rcall getYear
-	inc r0
+	inc r16
+	cpi r16, 99
+	breq inc_year_of
+	rjmp inc_year_end
+
+	inc_year_of:
+	clr r16
+
+	inc_year_end:
 	rcall setYear
 	rjmp inc_end_date
 

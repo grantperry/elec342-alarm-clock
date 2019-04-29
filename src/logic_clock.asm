@@ -44,16 +44,18 @@ logic_clock:
 	rjmp logic_clock_end
 
 	year_term:
-	ldi r16, 1 ; Month resets to 1
+	ldi r16, 1 ; Mon1h resets to 1
 	rcall setMonth
 
 	rcall getYear
-	ldi r16, 1
-	add r0, r16
-	ldi r16, 0
-	adc r1, r16
-	adc r2, r16
-	adc r3, r16
+	cpi r16, 100
+	brge century_term
+	inc r16
+	rcall setYear
+	rjmp logic_clock_end
+
+	century_term:
+	clr r16
 	rcall setYear
 
 	logic_clock_end:

@@ -37,33 +37,49 @@ TIM1_COMPA:
 	push r16
 	rcall get_timer_sub
 	cpi r16, 100
-	brge sub_sec_100
+	brlo sub_sec_100_end
+
+	rcall sub_sec_100
+
+	sub_sec_100_end:
 
 	ldi r17, 50 ; divisor
 	; r16 subject of division
 	rcall get_timer_sub
 	rcall div8u
 	tst r15
-	breq sub_sec_rep_25
+	brne sub_sec_50_end
+
+	rcall sub_sec_rep_25
+
+	sub_sec_50_end:
 
 	ldi r17, 10 ; divisor
 	; r16 subject of division
 	rcall get_timer_sub
 	rcall div8u
 	tst r15
-	breq sub_sec_rep_10
+	brne sub_sec_10_end
+
+	rcall sub_sec_rep_10
+
+	sub_sec_10_end:
 
 	ldi r17, 2 ; divisor
 	; r16 subject of division
 	rcall get_timer_sub
 	rcall div8u
 	tst r15
-	breq sub_sec_rep_02
+	brne sub_sec_2_end
+
+	rcall sub_sec_rep_02
+
+	sub_sec_2_end:
 
 	rjmp TIM1_COMPA_end
 
-	;run on the second once a second
-	sub_sec_100:
+;run on the second once a second
+sub_sec_100:
 	clr r16
 	rcall set_timer_sub
 	
@@ -72,19 +88,20 @@ TIM1_COMPA:
 	rcall print_time
 	rcall print_date
 
-	rjmp TIM1_COMPA_end
+	ret
 
-	sub_sec_rep_25: ; called 2 times a second except when it is the second
+sub_sec_rep_25: ; called 2 times a second except when it is the second
 	rcall screen_flash
 	rcall print_time
 	rcall print_date
-	rjmp TIM1_COMPA_end
+	ret
 
-	sub_sec_rep_10: ; called 10 times a second except when it is the second
-	rjmp TIM1_COMPA_end
+sub_sec_rep_10: ; called 10 times a second except when it is the second
+	ret
 
-	sub_sec_rep_02:
+sub_sec_rep_02:
 	rcall button_debounce
+	ret
 
 	TIM1_COMPA_end:
 	pop r16

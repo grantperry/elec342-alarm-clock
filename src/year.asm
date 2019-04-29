@@ -4,9 +4,8 @@ isLeapYear:
 	push r18 ; used as loop counter in div8u
 	
 	rcall getYear
-	mov r16, r0 ; low byte of year
 
-	subi r16, 2 ; dividend - 2 (remove two to make the offset correct for 1970)
+	; subi r16, 2 ; dividend - 2 (remove two to make the offset correct for 1970)
 	ldi r17, 4		;divisor
 	rcall div8u
 

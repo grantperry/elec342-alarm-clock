@@ -115,13 +115,12 @@ initialiseMem:
 	rcall setHour
 
 	clr r1
-	ldi r16, 49 ; years since 1970
-	mov r0, r16
+	ldi r16, 19 ; years since the start of the century
 	rcall setYear
 
-	ldi r16, 3
+	ldi r16, 12
 	rcall setMonth
-	ldi r16, 30
+	ldi r16, 31
 	rcall setDay
 
 	clr r16

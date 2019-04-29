@@ -247,7 +247,6 @@ print_year:
 	rjmp print_year_end
 	pop r16
 	rcall getYear
-	mov r16, r0
 	rcall LCD_Number
 	ret
 	print_year_end:

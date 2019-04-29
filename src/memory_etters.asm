@@ -33,8 +33,7 @@ getYear:
 	push ZH
 	ldi		ZL,LOW(YEAR*2)
 	ldi		ZH,HIGH(YEAR*2)
-	ld r0, z+
-	ld r1, z
+	ld r16, z
 	pop ZH
 	pop ZL
 	ret
@@ -94,8 +93,7 @@ setYear:
 	push ZH
 	ldi		ZL,LOW(YEAR*2)
 	ldi		ZH,HIGH(YEAR*2)
-	st z+, r0
-	st z, r1
+	st z, r16
 	pop ZH
 	pop ZL
 	ret
