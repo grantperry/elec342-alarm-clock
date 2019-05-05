@@ -2,10 +2,12 @@ buttons_init:
 	; clear: set as input
 	cbi DDRD, 2
 	cbi DDRD, 3
+	cbi DDRD, 4
 
 	; set: set as pull up
 	sbi PORTD, 2
 	sbi PORTD, 3
+	sbi PORTD, 4
 
 	cli
 
@@ -91,12 +93,16 @@ button_debounce:
 	ret
 
 button_actions:
-	cpi r16, 0x3
-	breq button_action_invalid
-	cpi r16, 0x2
+	cpi r16, (1<<2)
+	breq button_action_toggle_alarm_setter
+	cpi r16, (1<<1)
 	breq button_action_select
-	cpi r16, 0x1
+	cpi r16, (1<<0)
 	breq button_action_increment
+	rjmp button_action_finished
+
+	button_action_toggle_alarm_setter:
+	rcall toggle_alarm_setter
 	rjmp button_action_finished
 
 	button_action_select:
@@ -217,4 +223,8 @@ button_increment:
 
 	inc_end_date:
 	rcall print_date
+	ret
+
+toggle_alarm_setter:
+	rcall LCD_Number
 	ret

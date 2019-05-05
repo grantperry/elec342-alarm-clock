@@ -19,14 +19,13 @@ SECOND:		.BYTE 1
 
 DAY:		.BYTE 1
 MONTH:		.BYTE 1
-YEAR:		.BYTE 2
+YEAR:		.BYTE 1
 
 A_HOUR:			.BYTE 1
 A_MINUTE:		.BYTE 1
 
-STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low)
+STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low), 3:alarm_selector
 
-BCD_MEM:		.BYTE 5
 
 SUB_INT_DIV: .BYTE 1
 
@@ -36,6 +35,8 @@ BUTTONS_COUNT:	.BYTE 1
 
 SELECT:	.BYTE 1
 FLASH_SELECT:	.BYTE 1
+
+BCD_MEM:		.BYTE 5
 
 .CSEG
 .org		0x0000
@@ -144,6 +145,7 @@ end:
 	jmp end
 
 .include "src/logic_clock.asm"
+.include "src/alarm_setter.asm"
 .include "src/memory_etters.asm"
 .include "src/ui.asm"
 .include "src/month.asm"

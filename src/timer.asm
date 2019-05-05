@@ -83,17 +83,16 @@ sub_sec_100:
 	clr r16
 	rcall set_timer_sub
 	
+	;this must always happen
 	rcall logic_clock
 	
-	rcall print_time
-	rcall print_date
+	rcall print_date_time_display
 
 	ret
 
 sub_sec_rep_25: ; called 2 times a second except when it is the second
 	rcall screen_flash
-	rcall print_time
-	rcall print_date
+	rcall logic_clock
 	ret
 
 sub_sec_rep_10: ; called 10 times a second except when it is the second

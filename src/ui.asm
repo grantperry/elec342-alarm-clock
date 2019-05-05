@@ -1,3 +1,13 @@
+print_date_time_display:
+	rcall getState
+	sbrs r16, 3 ; dont print time if alarm selector is enabled
+	rcall print_time
+
+	rcall getState
+	sbrs r16, 3 ; dont print date if alarm selector is enabled
+	rcall print_date
+	ret
+
 print_time:
 	push r16
 
