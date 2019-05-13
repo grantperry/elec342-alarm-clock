@@ -86,16 +86,15 @@ sub_sec_100:
 	;this must always happen
 	rcall logic_clock
 	
-	rcall print_date_time_display
-
 	ret
 
-sub_sec_rep_25: ; called 2 times a second except when it is the second
+sub_sec_rep_25: ; called 4 times a second
 	rcall screen_flash
-	rcall logic_clock
+	; rcall logic_clock
+	rcall display_update
 	ret
 
-sub_sec_rep_10: ; called 10 times a second except when it is the second
+sub_sec_rep_10: ; called 10 times a second
 	ret
 
 sub_sec_rep_02:

@@ -138,6 +138,26 @@ getState:
 	pop ZL
 	ret
 
+setDisplaySelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(DISPLAY_SELECT*2)
+	ldi		ZH,HIGH(DISPLAY_SELECT*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getDisplaySelect:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(DISPLAY_SELECT*2)
+	ldi		ZH,HIGH(DISPLAY_SELECT*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
 setButtons:
 	push ZL
 	push ZH
@@ -256,4 +276,44 @@ toggleState1224:
 	rcall setState
 
 	pop r16
+	ret
+
+getAlarmMin:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_MINUTE*2)
+	ldi		ZH,HIGH(A_MINUTE*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setAlarmMin:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_MINUTE*2)
+	ldi		ZH,HIGH(A_MINUTE*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
+
+getAlarmHour:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_HOUR*2)
+	ldi		ZH,HIGH(A_HOUR*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setAlarmHour:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_HOUR*2)
+	ldi		ZH,HIGH(A_HOUR*2)
+	st z, r16
+	pop ZH
+	pop ZL
 	ret

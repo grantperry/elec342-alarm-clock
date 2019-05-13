@@ -14,7 +14,8 @@ buttons_init:
 	ldi r16, (1<<PCIE2)
 	sts PCICR, r16
 	
-	ldi r16, (1<<PCINT18)|(1<<PCINT19)
+	; pin change mask.
+	ldi r16, (1<<PCINT18)|(1<<PCINT19)|(1<<PCINT20)
 	sts PCMSK2, r16
 
 
@@ -51,10 +52,10 @@ PCINT2_BUTTONS:
 button_check_reg:
 	push r17
 	in r16, PIND
-	ldi r17, (1<<2)|(1<<3)|(1<<1)|(1<<0)
+	ldi r17, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)
 	eor r16, r17
 	lsr r16
-	lsr r16, 32
+	lsr r16
 	pop r17
 	ret
 
@@ -77,7 +78,7 @@ button_debounce:
 	pop r16
 	breq button_previously_actioned
 
-	rcall button_actions
+	rcall button_multiplex
 
 	ldi r16, 0x1
 	rcall setButtonsStable
@@ -92,139 +93,36 @@ button_debounce:
 	pop r16
 	ret
 
-button_actions:
-	cpi r16, (1<<2)
-	breq button_action_toggle_alarm_setter
-	cpi r16, (1<<1)
-	breq button_action_select
-	cpi r16, (1<<0)
-	breq button_action_increment
-	rjmp button_action_finished
-
-	button_action_toggle_alarm_setter:
-	rcall toggle_alarm_setter
-	rjmp button_action_finished
-
-	button_action_select:
-	rcall button_select
-	rjmp button_action_finished
-
-	button_action_increment:
-	rcall button_increment
-
-	button_action_invalid:
-	button_action_finished:
-	ret
-
-button_select:
+button_multiplex:
 	push r16
-	rcall getSelect
-	tst r16
-	breq button_select_no_selected
-	
-	rol r16
-	rjmp button_select_set
 
-	button_select_no_selected:
-	ldi r16, 1
+	rcall getDisplaySelect
+	cpi r16, (1<<0) ; clock
+	brne button_multiplex_not_clock
 
-	button_select_set:
-	rcall setSelect
-
-	ldi r16, 0xFF ; reset the display for all fiels to show.
-	rcall setFlashSelect
 	pop r16
+	rcall button_multiplex_clock
+	rjmp button_multiplex_end
+
+	button_multiplex_not_clock:
+	cpi r16, (1<<1); alarm
+	brne button_multiplex_not_alarm
+
+	pop r16
+	rcall button_multiplex_alarm
+	rjmp button_multiplex_end
+
+	button_multiplex_not_alarm:
+	pop r16 ; pop this off it it was none of the above.
+
+	button_multiplex_end:
 	ret
 
-button_increment:
-	rcall getSelect
-	cpi r16, (1<<0)
-	breq inc_hour
-	cpi r16, (1<<1)
-	breq inc_min
-	cpi r16, (1<<2)
-	breq inc_day
-	cpi r16, (1<<3)
-	breq inc_month
-	cpi r16, (1<<4)
-	breq inc_year
-	cpi r16, (1<<5)
-	breq inc_1224
 
-	inc_min:
-	rcall getMin
-	inc r16
-	cpi r16, 60
-	brge inc_min_of
-	rjmp inc_min_end
-
-	inc_min_of:
-	clr r16
-
-	inc_min_end:
-	rcall setMin
-	clr r16
-	rcall setSeconds
-	rjmp inc_end_time
-
-	inc_hour:
-	rcall getHour
-	inc r16
-	cpi r16, 24
-	brge inc_hour_of
-	rjmp inc_hour_end
-
-	inc_hour_of:
-	clr r16
-
-	inc_hour_end:
-	rcall setHour
-	rjmp inc_end_time
-	
-	inc_day:
-	rcall logic_clock_day_inc
-	rjmp inc_end_date
-
-	inc_month:
-	rcall getMonth
-	inc r16
-	cpi r16, 13 ; 12 months resetting to 1
-	brge inc_month_of
-	rjmp inc_month_end
-
-	inc_month_of:
-	ldi r16, 1
-
-	inc_month_end:
-	rcall setMonth
-	rjmp inc_end_date
-
-	inc_year:
-	rcall getYear
-	inc r16
-	cpi r16, 99
-	breq inc_year_of
-	rjmp inc_year_end
-
-	inc_year_of:
-	clr r16
-
-	inc_year_end:
-	rcall setYear
-	rjmp inc_end_date
-
-	inc_1224:
-	rcall toggleState1224
-	rjmp inc_end_time
-
-	inc_end_time:
-	rcall print_time
+button_multiplex_clock:
+	rcall button_clock_actions
 	ret
 
-	inc_end_date:
-	rcall print_date
-	ret
-
-toggle_alarm_setter:
-	rcall LCD_Number
+button_multiplex_alarm:
+	rcall button_alarm_actions
 	ret

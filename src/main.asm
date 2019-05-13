@@ -25,6 +25,7 @@ A_HOUR:			.BYTE 1
 A_MINUTE:		.BYTE 1
 
 STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low), 3:alarm_selector
+DISPLAY_SELECT:		.BYTE 1 ; 0: clock, 1: alarm
 
 
 SUB_INT_DIV: .BYTE 1
@@ -125,6 +126,7 @@ initialiseMem:
 	rcall setDay
 
 	clr r16
+	; ldi r16, 1
 	rcall setState
 
 	ldi r16, 0
@@ -132,6 +134,15 @@ initialiseMem:
 
 	ldi r16, 0xFF
 	rcall setFlashSelect
+
+	ldi r16, (1<<0)
+	rcall setDisplaySelect
+
+	ldi r16, 20
+	rcall setAlarmHour
+
+	ldi r16, 42
+	rcall setAlarmMin
 
 	; rcall toggleState1224
 	; rcall toggleState1224
@@ -145,16 +156,21 @@ end:
 	jmp end
 
 .include "src/logic_clock.asm"
+.include "src/I2C-master.asm"
 .include "src/alarm_setter.asm"
 .include "src/memory_etters.asm"
 .include "src/ui.asm"
 .include "src/month.asm"
 .include "src/year.asm"
-.include "src/timer.asm"
-.include "src/I2C-master.asm"
+.include "src/display.asm"
+.include "src/ui_clock.asm"
+.include "src/ui_alarm.asm"
 .include "src/LCD.asm"
+.include "src/buttons.asm"
+.include "src/buttons_alarm.asm"
+.include "src/buttons_clock.asm"
+.include "src/timer.asm"
 .include "src/div8u.asm"
 .include "src/bin2ascii5.asm"
 .include "src/spi.asm"
 .include "src/spi_extend.asm"
-.include "src/buttons.asm"
