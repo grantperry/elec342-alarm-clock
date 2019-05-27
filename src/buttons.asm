@@ -96,6 +96,14 @@ button_debounce:
 button_multiplex:
 	push r16
 
+	rcall getAlarmCounter
+	tst r16 ; test if the alarm is currently active
+
+	; do this after we have tested if the alarm was active or not so we can test correcly.
+	rcall button_multiplex_all ; always do these actions when any button is pressed.
+
+	brne button_multiplex_not_alarm ; if alarm active, skip all other button actions
+
 	rcall getDisplaySelect
 	cpi r16, (1<<0) ; clock
 	brne button_multiplex_not_clock
@@ -125,4 +133,8 @@ button_multiplex_clock:
 
 button_multiplex_alarm:
 	rcall button_alarm_actions
+	ret
+
+button_multiplex_all:
+	rcall button_always_actions
 	ret

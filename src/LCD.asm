@@ -77,7 +77,10 @@ LCD_serror:
 
 
 LCD_Number:
-	; push r16
+	push r16
+	push r19
+	cpi r16, 100
+	brge LCD_Number_3dig
 	cpi r16, 10
 	brge LCD_Number_2dig
 
@@ -92,6 +95,13 @@ LCD_Number:
 
 	rjmp LCD_Number_2dig
 
+	LCD_Number_3dig:
+	ldi r16, '-'
+	rcall LCD_Char
+	ldi r16, '-'
+	rcall LCD_Char
+	rjmp LCD_Number_end
+
 	LCD_Number_2dig:
 
 	ldi ZL, LOW(BCD_MEM)
@@ -105,13 +115,15 @@ LCD_Number:
 	rcall LCD_Digit
 	dec r0
 	brne LCD_Number_loop
-	ret
+	rjmp LCD_Number_end
 
 	LCD_Number_zero:
 	ldi r19, 0
 	rcall LCD_Digit
 
-	; pop r16
+	LCD_Number_end:
+	pop r19
+	pop r16
 	ret
 
 LCD_Digit:

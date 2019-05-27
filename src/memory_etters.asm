@@ -317,3 +317,23 @@ setAlarmHour:
 	pop ZH
 	pop ZL
 	ret
+
+getAlarmCounter:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_COUNTER*2)
+	ldi		ZH,HIGH(A_COUNTER*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setAlarmCounter:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_COUNTER*2)
+	ldi		ZH,HIGH(A_COUNTER*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret

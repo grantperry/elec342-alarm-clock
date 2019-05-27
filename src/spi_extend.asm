@@ -46,6 +46,7 @@ clearLED:
 	pop r16
 	ret	
 
+; ret r16: buttons
 getSPIButtons:
 	push r17
 	ldi r17, 0x13 ; read the Breg inputs

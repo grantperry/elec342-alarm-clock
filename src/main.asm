@@ -23,6 +23,7 @@ YEAR:		.BYTE 1
 
 A_HOUR:			.BYTE 1
 A_MINUTE:		.BYTE 1
+A_COUNTER:	.BYTE 1
 
 STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low), 3:alarm_selector
 DISPLAY_SELECT:		.BYTE 1 ; 0: clock, 1: alarm
@@ -58,9 +59,9 @@ start:
 	jmp TIM1_COMPA ; Timer1 CompareA
 	jmp UNKNOWN_INT ; Timer1 CompareB
 	jmp UNKNOWN_INT ; Timer1 Overflow
-	jmp UNKNOWN_INT ; Timer0 CompareA
-	jmp UNKNOWN_INT ; Timer0 CompareB
-	jmp UNKNOWN_INT ; Timer0 Overflow
+	jmp TIM0_COMPA ; Timer0 CompareA
+	jmp TIM0_COMPA ; Timer0 CompareB
+	jmp TIM0_COMPA ; Timer0 Overflow
 	jmp UNKNOWN_INT ; SPI Transfer Complete
 	jmp UNKNOWN_INT ; USART RX Complete
 	jmp UNKNOWN_INT ; USART UDR Empty
@@ -98,8 +99,10 @@ main:
 	rcall spi_extend_init
 
 	rcall buttons_init
+	rcall alarm_init
 
-	rcall timer_enable
+	rcall timer_setup1
+	rcall timer_setup0
 
 	sl:
 	sleep
@@ -109,11 +112,11 @@ main:
 initialiseMem:
 	; set Hour, Min and Second to 0
 	; clr r16
-	ldi r16, 57
+	ldi r16, 50
 	rcall setSeconds
-	ldi r16, 59
+	ldi r16, 29
 	rcall setMin
-	ldi r16, 23
+	ldi r16, 10
 	rcall setHour
 
 	clr r1
@@ -138,11 +141,14 @@ initialiseMem:
 	ldi r16, (1<<0)
 	rcall setDisplaySelect
 
-	ldi r16, 20
+	ldi r16, 10
 	rcall setAlarmHour
 
-	ldi r16, 42
+	ldi r16, 30
 	rcall setAlarmMin
+	
+	ldi r16, 0
+	rcall setAlarmCounter
 
 	; rcall toggleState1224
 	; rcall toggleState1224
@@ -155,6 +161,7 @@ UNKNOWN_INT:
 end:
 	jmp end
 
+.include "src/alarm.asm"
 .include "src/logic_clock.asm"
 .include "src/I2C-master.asm"
 .include "src/alarm_setter.asm"
@@ -169,6 +176,7 @@ end:
 .include "src/buttons.asm"
 .include "src/buttons_alarm.asm"
 .include "src/buttons_clock.asm"
+.include "src/buttons_always.asm"
 .include "src/timer.asm"
 .include "src/div8u.asm"
 .include "src/bin2ascii5.asm"

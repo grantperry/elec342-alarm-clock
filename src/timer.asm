@@ -1,4 +1,66 @@
-timer_enable:
+timer_setup0:
+	cli
+
+	sbi DDRD,6
+	sbi DDRD,5
+	; cBI DDRD,6
+
+	; sbi PORTD, 6
+	cbi PORTD, 6
+	cbi PORTD, 5
+
+
+	;
+	; configure timer 1:
+	; count to OCR1A and reset,
+	; toggle OCR1A output on reset,
+	; frequency using /8 prescaler
+	;
+	; rcall timer_enable0A
+	ldi	r16,0b00001100	; [-,-,-,-,WGM02,CS02,-,-]
+	out	TCCR0B,r16			; SET PRESCALER/DIVIDER TO /256 
+	ldi	r16,0b00000000	; interrupt enabled when OCA match (and other interrupts)
+	sts	TIMSK0,r16
+
+	;
+	; The counter is now running at 16,000,000 HZ / 8
+	; = 2,000,000 ticks per second, 1,000,000 cycles per second
+	; To calculate the tone frequency
+	; num = 1,000,000 / frequency
+	; for 100Hz...
+	;	1000000/100 = 10000
+	ldi r16, 71
+	rcall timer_set0A
+	; ldi r16, 18
+	; out	OCR0B,r16
+
+	; ldi r25, 0x9
+	; rcall LCD_Position
+	; rcall LCD_Number
+
+	sei
+	ret
+
+timer_enable0A:
+	push r16
+	ldi	r16,0b01000011	; [-,COMP0A0,-,-,-,-,WGM01,WGM00]
+	out	TCCR0A,r16			; SET TO FAST PWM MODE 7
+	pop r16
+	ret
+
+timer_disable0A:
+	push r16
+	ldi	r16,0b00000011	; [-,COMP0A0,-,-,-,-,WGM01,WGM00]
+	out	TCCR0A,r16			; SET TO FAST PWM MODE 7
+	pop r16
+	ret
+
+timer_set0A:
+	out	OCR0A,r16
+	ret
+
+
+timer_setup1:
 	cli
 
 	;
@@ -30,6 +92,10 @@ timer_enable:
 
 	sei
 	ret
+
+TIM0_COMPA:
+	; rcall LCD_Number
+	reti
 
 TIM1_COMPA:
 	rcall increment_sub
@@ -85,6 +151,10 @@ sub_sec_100:
 	
 	;this must always happen
 	rcall logic_clock
+
+	rcall logic_alarm
+
+	rcall alarm_runtime_logic
 	
 	ret
 
@@ -99,6 +169,8 @@ sub_sec_rep_10: ; called 10 times a second
 
 sub_sec_rep_02:
 	rcall button_debounce
+	rcall alarm_remote_button
+
 	ret
 
 	TIM1_COMPA_end:
