@@ -21,6 +21,10 @@ logic_clock:
 	clr r16
 	rcall setMin
 
+	rcall logic_daylight_savings
+	tst r16 ; if daylight savings happened, then disregard all other logic. else continue as normal
+	brne logic_clock_end
+
 	rcall getHour
 	cpi r16, 23			;terminate if hours >= 23
 	brge day_term
@@ -31,6 +35,8 @@ logic_clock:
 	day_term:
 	clr r16
 	rcall setHour
+
+	rcall logic_daylight_savings_reset_state ; reset the daylight saving flag for april.
 	
 	rcall logic_clock_day_inc
 	tst r16

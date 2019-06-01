@@ -25,7 +25,7 @@ A_HOUR:			.BYTE 1
 A_MINUTE:		.BYTE 1
 A_COUNTER:	.BYTE 1
 
-STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low), 3:alarm_selector
+STATE:		.BYTE 1 ; 0:alarm_enabled, 1:alarm_snoozed, 2:12_24_mode(12:high, 24:low), 3:alarm_selector, 4:dls_april_occured
 DISPLAY_SELECT:		.BYTE 1 ; 0: clock, 1: alarm
 
 
@@ -112,24 +112,23 @@ main:
 initialiseMem:
 	; set Hour, Min and Second to 0
 	; clr r16
-	ldi r16, 50
+	ldi r16, 57
 	rcall setSeconds
-	ldi r16, 29
+	ldi r16, 59
 	rcall setMin
-	ldi r16, 10
+	ldi r16, 1
 	rcall setHour
 
-	clr r1
 	ldi r16, 19 ; years since the start of the century
 	rcall setYear
 
-	ldi r16, 12
+	ldi r16, 10
 	rcall setMonth
-	ldi r16, 31
+	ldi r16, 1
 	rcall setDay
 
 	clr r16
-	; ldi r16, 1
+	; ldi r16, (1<<4)
 	rcall setState
 
 	ldi r16, 0
@@ -163,6 +162,7 @@ end:
 
 .include "src/alarm.asm"
 .include "src/logic_clock.asm"
+.include "src/logic_daylight_savings.asm"
 .include "src/I2C-master.asm"
 .include "src/alarm_setter.asm"
 .include "src/memory_etters.asm"
