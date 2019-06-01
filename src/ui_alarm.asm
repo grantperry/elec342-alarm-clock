@@ -31,8 +31,6 @@ print_time_alarm:
 	rjmp print_time_alarm_end
 
 	print_time_alarm_12:
-
-
 	rcall getAlarmHour
 	cpi r16, 12
 	brge print_time_alarm_12_pm
@@ -46,20 +44,23 @@ print_time_alarm:
 	ldi r16, 12		; display 12:**:** at 00:**:**
 	print_time_alarm_12_00_end:
 
-	rcall LCD_Number
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 0
+	rjmp print_time_alarm_00_am_flash
 
+	pop r16
+	rcall LCD_Number
+	rjmp print_time_alarm_00_am_flash_end
+
+	print_time_alarm_00_am_flash:
+	pop r16
+	rcall time_blank
+
+	print_time_alarm_00_am_flash_end:
 	rcall time_delimiter
 	rcall print_minute_alarm
-
-	rcall getFlashSelect
-	sbrs r16, 5
-	rjmp print_time_alarm_12_00_flash ; dont print 'AM' because its flashing
-
 	rcall time_am
-	rjmp print_time_alarm_end
-
-	print_time_alarm_12_00_flash:
-	rcall time_blank
 	rjmp print_time_alarm_end
 
 	print_time_alarm_12_pm:
@@ -73,18 +74,23 @@ print_time_alarm:
 	ldi r16, 12		; display 12:**:** at 00:**:**
 	print_time_alarm_24_00_end:
 
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 0
+	rjmp print_time_alarm_00_pm_flash
+
+	pop r16
 	rcall LCD_Number
+	rjmp print_time_alarm_00_pm_flash_end
+
+	print_time_alarm_00_pm_flash:
+	pop r16
+	rcall time_blank
+
+	print_time_alarm_00_pm_flash_end:
 	rcall time_delimiter
 	rcall print_minute_alarm
-
-	rcall getFlashSelect
-	sbrs r16, 5
-	rjmp print_time_alarm_24_00_flash ; dont print 'AM' because its flashing
-
 	rcall time_pm
-
-	print_time_alarm_24_00_flash:
-	rcall time_blank
 
 	print_time_alarm_end:
 	pop r16

@@ -57,22 +57,25 @@ print_time:
 	ldi r16, 12		; display 12:**:** at 00:**:**
 	print_time_12_00_end:
 
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 0
+	rjmp print_time_12_00_hour_flash
+	pop r16
+
 	rcall LCD_Number
+	rjmp print_time_12_00_hour_flash_end
+
+	print_time_12_00_hour_flash:
+	pop r16
+	rcall time_blank
+	print_time_12_00_hour_flash_end:
 
 	rcall time_delimiter
 	rcall print_minute
 	rcall time_delimiter
 	rcall print_second
-
-	rcall getFlashSelect
-	sbrs r16, 5
-	rjmp print_time_12_00_flash ; dont print 'AM' because its flashing
-
 	rcall time_am
-	rjmp print_time_end
-
-	print_time_12_00_flash:
-	rcall time_blank
 	rjmp print_time_end
 
 	print_time_12_pm:
@@ -85,21 +88,26 @@ print_time:
 	print_time_24_00:
 	ldi r16, 12		; display 12:**:** at 00:**:**
 	print_time_24_00_end:
+	
+	push r16
+	rcall getFlashSelect
+	sbrs r16, 0
+	rjmp print_time_24_00_hour_flash
+	pop r16
 
 	rcall LCD_Number
+	rjmp print_time_24_00_hour_flash_end
+
+	print_time_24_00_hour_flash:
+	pop r16
+	rcall time_blank
+	print_time_24_00_hour_flash_end:
+
 	rcall time_delimiter
 	rcall print_minute
 	rcall time_delimiter
 	rcall print_second
-
-	rcall getFlashSelect
-	sbrs r16, 5
-	rjmp print_time_24_00_flash ; dont print 'AM' because its flashing
-
 	rcall time_pm
-
-	print_time_24_00_flash:
-	rcall time_blank
 
 	print_time_end:
 	pop r16

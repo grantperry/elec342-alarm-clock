@@ -69,6 +69,7 @@ timer_setup1:
 	; toggle OCR1A output on reset,
 	; frequency using /8 prescaler
 	;
+	; this toggle the physical output pin as well cause why not. good for debug on timing.
 	ldi	r16,0b01000000	; port A toggle, port B normal, WGRM=0100
 	sts	TCCR1A,r16
 	ldi	r16,0b00001100	; noise = 0, WGRM=1000, clk = /8
