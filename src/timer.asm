@@ -99,9 +99,12 @@ TIM0_COMPA:
 	reti
 
 TIM1_COMPA:
+	push r16
+	push r17
+	push r18
+	push r19
 	rcall increment_sub
 
-	push r16
 	rcall get_timer_sub
 	cpi r16, 100
 	brlo sub_sec_100_end
@@ -176,6 +179,9 @@ sub_sec_rep_02:
 	ret
 
 	TIM1_COMPA_end:
+	pop r19
+	pop r18
+	pop r17
 	pop r16
 	reti
 

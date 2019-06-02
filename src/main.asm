@@ -113,11 +113,11 @@ main:
 initialiseMem:
 	; set Hour, Min and Second to 0
 	; clr r16
-	ldi r16, 59
+	ldi r16, 0
 	rcall setSeconds
-	ldi r16, 59
+	ldi r16, 0
 	rcall setMin
-	ldi r16, 3
+	ldi r16, 0
 	rcall setHour
 
 	ldi r16, 19 ; years since the start of the century
@@ -129,7 +129,7 @@ initialiseMem:
 	rcall setDay
 
 	clr r16
-	ldi r16, (1<<0)
+	; ldi r16, (1<<0)
 	rcall setState
 
 	ldi r16, 0
@@ -141,10 +141,10 @@ initialiseMem:
 	ldi r16, (1<<0)
 	rcall setDisplaySelect
 
-	ldi r16, 4
+	ldi r16, 6
 	rcall setAlarmHour
 
-	ldi r16, 00
+	ldi r16, 30
 	rcall setAlarmMin
 	
 	ldi r16, 0
