@@ -115,22 +115,22 @@ TIM1_COMPA:
 	rcall get_timer_sub
 	rcall div8u
 	tst r15
-	brne sub_sec_50_end
+	brne sub_sec_25_end
 
 	rcall sub_sec_rep_25
 
-	sub_sec_50_end:
+	sub_sec_25_end:
 
-	ldi r17, 10 ; divisor
+	ldi r17, 25 ; divisor
 	; r16 subject of division
 	rcall get_timer_sub
 	rcall div8u
 	tst r15
-	brne sub_sec_10_end
+	brne sub_sec_50_end
 
-	rcall sub_sec_rep_10
+	rcall sub_sec_rep_50
 
-	sub_sec_10_end:
+	sub_sec_50_end:
 
 	ldi r17, 2 ; divisor
 	; r16 subject of division
@@ -165,7 +165,8 @@ sub_sec_rep_25: ; called 4 times a second
 	rcall display_update
 	ret
 
-sub_sec_rep_10: ; called 10 times a second
+sub_sec_rep_50: ; called 10 times a second
+	rcall alarm_music_tick
 	ret
 
 sub_sec_rep_02:

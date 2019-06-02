@@ -337,3 +337,23 @@ setAlarmCounter:
 	pop ZH
 	pop ZL
 	ret
+
+getMusicCounter:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_MUSIC_COUNT*2)
+	ldi		ZH,HIGH(A_MUSIC_COUNT*2)
+	ld r16, z
+	pop ZH
+	pop ZL
+	ret
+
+setMusicCounter:
+	push ZL
+	push ZH
+	ldi		ZL,LOW(A_MUSIC_COUNT*2)
+	ldi		ZH,HIGH(A_MUSIC_COUNT*2)
+	st z, r16
+	pop ZH
+	pop ZL
+	ret
