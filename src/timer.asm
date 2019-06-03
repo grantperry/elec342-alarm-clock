@@ -86,6 +86,8 @@ timer_setup1:
 	; num = 1,000,000 / frequency
 	; for 100Hz...
 	;	1000000/100 = 10000
+	; ldi	r17,HIGH(599)	; set counter to 10000
+	; ldi	r16,LOW(599)
 	ldi	r17,HIGH(625)	; set counter to 10000
 	ldi	r16,LOW(625)
 	sts	OCR1AH,r17
